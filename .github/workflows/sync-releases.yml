@@ -1,16 +1,27 @@
-name: Clone Releases # 工作流的名称，可以随便改，比如“同步满血版”
+name: 终极全自动同步 (代码+Releases)
+
 on:
-  workflow_dispatch: # 允许你在网页上手动点击“运行工作流”来立刻触发
+  workflow_dispatch: # 支持手动点击
   schedule:
-    - cron: '20 16 * * *' # 定时任务：每天 UTC 时间 16:20（北京时间凌晨 0:20）自动运行
+    - cron: '47 16 * * *' # 每天北京时间 0:47 自动运行
 
 jobs:
-  clone:
-    runs-on: ubuntu-latest # 使用 GitHub 提供的最新版云端 Linux 服务器运行
+  sync:
+    runs-on: ubuntu-latest
     steps:
-      - name: Clone Releases # 这一步的名字叫“克隆发行版”
-        uses: andrewthetechie/gha-clone-releases@v1 # 使用第三方写好的搬运工具（版本v1）
+      # 第一步：自动同步原作者的代码（相当于帮你自动点了 Sync fork）
+      - name: 同步上游代码
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
         with:
-          token: ${{ secrets.GH_TOKEN }} # 使用你刚才在仓库设置里添加的机密令牌，用于授权上传
-          src_repo: 555bbbAAA/dsh-purge # 目标上游仓库（原作者账号/仓库名）
-          copy_assets: true # 是否同时搬运附件（比如编译好的ZIP包），true代表是
+          upstream_sync_repo: kingcharleslzy-ai/dsh-purge # 记得改成你对应的上游
+          upstream_sync_branch: master
+          target_sync_branch: master
+          target_repo_token: ${{ secrets.GH_TOKEN }}
+          
+      # 第二步：自动搬运 Releases 和附件
+      - name: 搬运 Releases
+        uses: andrewthetechie/gha-clone-releases@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          src_repo: 555bbbAAA/dsh-purge # 记得改成你对应的上游
+          copy_assets: true
