@@ -1,27 +1,35 @@
 name: 终极全自动同步 (代码+Releases)
 
 on:
-  workflow_dispatch: # 支持手动点击
+  workflow_dispatch: 
   schedule:
-    - cron: '22 16 * * *' # 每天北京时间 0:22 自动运行
+    - cron: '20 16 * * *' 
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 第一步：自动同步原作者的代码（相当于帮你自动点了 Sync fork）
+      # 1. 必须第一步做：先把你仓库的代码拉取到云端（之前就是缺了这一步报的错）
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      # 2. 同步原作者的代码（相当于自动帮你点 Sync fork）
       - name: 同步上游代码
         uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
         with:
-          upstream_sync_repo: kingcharleslzy-ai/dsh-purge # 记得改成你对应的上游
+          upstream_sync_repo: 555bbbAAA/dsh-purge # ⚠️注意：这里一定要改成当前仓库对应的上游！
           upstream_sync_branch: master
           target_sync_branch: master
           target_repo_token: ${{ secrets.GH_TOKEN }}
-          
-      # 第二步：自动搬运 Releases 和附件
+          upstream_pull_args: '--allow-unrelated-histories' 
+
+      # 3. 搬运 Releases（搬运发行版说明和附件）
       - name: 搬运 Releases
         uses: andrewthetechie/gha-clone-releases@v1
         with:
           token: ${{ secrets.GH_TOKEN }}
-          src_repo: 555bbbAAA/dsh-purge # 记得改成你对应的上游
+          src_repo: 555bbbAAA/dsh-purge # ⚠️注意：这里也要改成对应的上游！
           copy_assets: true
