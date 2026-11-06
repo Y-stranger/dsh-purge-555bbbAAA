@@ -3,7 +3,7 @@ name: 终极全自动同步 (代码+Releases)
 on:
   workflow_dispatch: # 支持手动点击
   schedule:
-    - cron: '47 16 * * *' # 每天北京时间 0:47 自动运行
+    - cron: '58 16 * * *' # 每天北京时间 0:58 自动运行
 
 jobs:
   sync:
